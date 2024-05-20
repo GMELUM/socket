@@ -13,16 +13,16 @@ type socket struct {
 	listener net.Listener
 
 	outerWorkers int
-	outerQueue   int
+	outerTasks   int
 
 	innerWorkers int
-	innerQueue   int
+	innerTasks   int
 
-	eventsConnect    []func(cn *connect.Connect)
+	eventsConnect    []func(cn *connect.Connect) (err error)
 	eventsDisconnect []func(cn *connect.Connect)
-	eventReject      []func(cn *connect.Connect)
-	eventsAuth       []func(url []byte) (err error)
-	eventsCors       []func(origin []byte) (err error)
+	eventsReject     []func(cn *connect.Connect)
+	eventsCors       []func(origin string) (err error)
+	eventsRequest    []func(uri string) (err error)
 
 	readBufferSize  int
 	writeBufferSize int

@@ -6,11 +6,12 @@ import (
 )
 
 type Options struct {
+	
 	OuterWorkers int
-	OuterQueue   int
+	OuterTasks   int
 
 	InnerWorkers int
-	InnerQueue   int
+	InnerTasks   int
 
 	//	Connection limit. Connections that exceed the limit will be dropped.
 	MaxConn int

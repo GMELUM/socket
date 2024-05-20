@@ -1,72 +1,50 @@
 package client
 
-import (
-	"bytes"
-	"net"
-	"sync"
+type IClient interface {
+	HandlerEvents(dataType string, data interface{})
+}
 
-	"github.com/gmelum/socket/utils/pool"
+// Clan struct
+type Room struct {
+	ID string
+}
 
-	"github.com/gobwas/ws"
-	"github.com/gobwas/ws/wsutil"
-	"github.com/google/uuid"
-)
+func (r *Room) UpdateBg() {
+	
+}
+
+type RoomList map[string]*Room
 
 type Client struct {
-	ID         string
-	mutexRead  sync.Mutex
-	mutexWrite sync.Mutex
-
-	Conn net.Conn
-	pool *pool.Pool
-
-	events []func(...interface{})
-
-	Close func()
+	FirstName string
+	LastName  string
+	Room    *Room
 }
 
-func New(
-	conn net.Conn,
-	pool *pool.Pool,
-) *Client {
+func New() *Client {
 
-	id := uuid.New()
-
-	return &Client{
-		ID:   id.String(),
-		Conn: conn,
-		pool: pool,
-	}
-
+	return &Client{}
 }
 
-func (client *Client) Read() error {
-
-	client.mutexRead.Lock()
-	defer client.mutexRead.Unlock()
-
-	header, reader, err := wsutil.NextReader(client.Conn, ws.StateServerSide)
-	if err != nil {
-		return err
+func (cl *Client) HandlerEvents(dataType string, data interface{}) {
+	switch dataType {
+	case "get_clan":
+		cl.Send(GET_CLAN(data))
+	case "get_user":
+		cl.Send(GET_USER(data))
 	}
+}
 
-	if header.OpCode.IsControl() {
-		handler := wsutil.ControlFrameHandler(client.Conn, ws.StateServerSide)
-		return handler(header, reader)
-	}
+func GET_CLAN(data interface{}) *struct{} {
+	// request mysql
+	return &struct{}{}
+}
 
-	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(reader)
-	if err != nil {
-		return err
-	}
+func GET_USER(data interface{}) *struct{} {
+	// request mysql
+	return &struct{}{}
+}
 
-	// decoded := decoding(buf.Bytes())
-
-	// if client.callbackEvents != nil {
-	// 	client.callbackEvents(decoded.Type, decoded.Value)
-	// }
-
-	return nil
-
+func (cl *Client) Send(data interface{}) {
+	// sending data
 }
