@@ -2,9 +2,27 @@ package socket
 
 import (
 	"github.com/gmelum/socket/entity/connect"
+	"github.com/gmelum/socket/entity/context"
 )
 
 func New(opt Options) *socket {
+
+	if opt.OuterWorkers == 0 {
+		opt.OuterWorkers = 1
+	}
+
+	if opt.OuterTasks == 0 {
+		opt.OuterTasks = 1
+	}
+
+	if opt.InnerWorkers == 0 {
+		opt.InnerWorkers = 1
+	}
+
+	if opt.InnerTasks == 0 {
+		opt.InnerTasks = 1
+	}
+
 	return &socket{
 
 		outerWorkers: opt.OuterWorkers,
@@ -21,14 +39,11 @@ func New(opt Options) *socket {
 		extensionCustom: opt.ExtensionCustom,
 		negotiate:       opt.Negotiate,
 		header:          opt.Header,
-		onRequest:       opt.OnRequest,
-		onHost:          opt.OnHost,
-		onHeader:        opt.OnHeader,
-		onBeforeUpgrade: opt.OnBeforeUpgrade,
 
 		eventsConnect:    []func(ch *connect.Connect) (err error){},
 		eventsDisconnect: []func(ch *connect.Connect){},
 		eventsCors:       []func(origin string) (err error){},
-		eventsRequest:    []func(uri string) (err error){},
+
+		events: make(map[string]func(ctx *context.Context)),
 	}
 }

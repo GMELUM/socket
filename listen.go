@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net"
 	"sync"
-	"time"
 
 	"github.com/gmelum/socket/entity/connect"
+	"github.com/gmelum/socket/entity/context"
 
 	"github.com/mailru/easygo/netpoll"
 
@@ -34,6 +34,7 @@ func (soc *socket) Listen(port int) error {
 
 	poller.Start(acceptDesc, func(e netpoll.Event) {
 		outerPool.Submit(func() {
+
 			defer func() {
 				if err := recover(); err != nil {
 					fmt.Println("Возникла паника:", err)
@@ -57,13 +58,8 @@ func (soc *socket) Listen(port int) error {
 				soc.extensionCustom,
 				soc.negotiate,
 				soc.header,
-				soc.onRequest,
-				soc.onHost,
-				soc.onHeader,
-				soc.onBeforeUpgrade,
 
 				&soc.eventsCors,
-				&soc.eventsRequest,
 				&soc.eventsConnect,
 			)
 			if err != nil {
@@ -80,8 +76,6 @@ func (soc *socket) Listen(port int) error {
 				}
 			}
 
-			time.Sleep(time.Second * 20)
-
 			conn.Event(func(ev netpoll.Event) {
 
 				if ev&(netpoll.EventReadHup|netpoll.EventHup) != 0 {
@@ -89,23 +83,28 @@ func (soc *socket) Listen(port int) error {
 					return
 				}
 
-				if conn.Status != "OPEN" {
-					once.Do(handlerClose)
-				}
-
 				innerPool.Submit(func() {
-					println("message")
-					time.Sleep(time.Second * 5)
+					msg, err := conn.Read()
+
+					if err == nil {
+						if msg.ID == 0 && msg.Type == "ping" {
+							conn.Send(0, "pong", "")
+							return
+						}
+						if callback, ok := soc.events[msg.Type]; ok {
+							callback(&context.Context{
+								ID:   msg.ID,
+								Type: msg.Type,
+								Data: msg.Value,
+								Conn: conn,
+							})
+						}
+					}
 				})
 
 			})
-		})
 
-		// outerPool.Submit(func() {
-		// 	for _, callback := range soc.eventsConnect {
-		// 		callback(conn)
-		// 	}
-		// })
+		})
 
 	})
 

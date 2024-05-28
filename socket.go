@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/gmelum/socket/entity/connect"
+	"github.com/gmelum/socket/entity/context"
 
 	"github.com/gobwas/httphead"
 	"github.com/gobwas/ws"
@@ -18,12 +19,6 @@ type socket struct {
 	innerWorkers int
 	innerTasks   int
 
-	eventsConnect    []func(cn *connect.Connect) (err error)
-	eventsDisconnect []func(cn *connect.Connect)
-	eventsReject     []func(cn *connect.Connect)
-	eventsCors       []func(origin string) (err error)
-	eventsRequest    []func(uri string) (err error)
-
 	readBufferSize  int
 	writeBufferSize int
 	protocol        func([]byte) bool
@@ -32,8 +27,11 @@ type socket struct {
 	extensionCustom func([]byte, []httphead.Option) ([]httphead.Option, bool)
 	negotiate       func(httphead.Option) (httphead.Option, error)
 	header          ws.HandshakeHeader
-	onRequest       func(uri []byte) error
-	onHost          func(host []byte) error
-	onHeader        func(key, value []byte) error
-	onBeforeUpgrade func() (header ws.HandshakeHeader, err error)
+
+	eventsConnect    []func(cn *connect.Connect) (err error)
+	eventsDisconnect []func(cn *connect.Connect)
+	eventsReject     []func(cn *connect.Connect)
+	eventsCors       []func(origin string) (err error)
+
+	events map[string]func(ctx *context.Context)
 }

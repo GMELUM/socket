@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/gmelum/socket"
 	"github.com/gmelum/socket/entity/connect"
+	"github.com/gmelum/socket/entity/context"
+	// "github.com/gmelum/socket/errors"
 )
 
 func main() {
@@ -24,29 +26,41 @@ func main() {
 	// connection request headers. Called before upgrading to websocket
 	server.Cors(func(origin string) (err error) {
 		println("origin:", string(origin))
-		return nil
-	})
-
-	// Get the connection uri. Called before upgrading to websocket
-	server.Request(func(uri string) (err error) {
-		println("uri:", string(uri))
+		// if string(origin) != "example.com" {
+		// 	return errors.Forbidden()
+		// }
 		return nil
 	})
 
 	// We receive a connection when a user connects
-	server.Connect(func(ch *connect.Connect) (err error) {
-		println("connect:", ch.ID)
+	server.Connect(func(cn *connect.Connect) (err error) {
+		println("connect:", cn.ID)
 		return nil
 	})
 
 	// Receiving a connection when a user disconnects
-	server.Disconnect(func(ch *connect.Connect) {
-		println("disconnect:", ch.ID)
+	server.Disconnect(func(cn *connect.Connect) {
+		println("disconnect:", cn.ID)
 	})
 
 	// Getting a connection when the user resets
-	server.Reject(func(ch *connect.Connect) {
-		println("reject:", ch.ID)
+	server.Reject(func(cn *connect.Connect) {
+		if cn != nil {
+			println("reject:", cn.ID)
+		}
+	})
+
+	server.Event("user.get", func(ctx *context.Context) {
+
+		data := map[string]interface{}{
+			"id":         123,
+			"first_name": "Artur",
+			"last_name":  "Getman",
+			"level":      99,
+		}
+
+		ctx.Answer(data)
+
 	})
 
 	// Start listening on the port 18300

@@ -15,7 +15,7 @@ type Encoding struct {
 }
 
 func encoding(msg Encoding) *[]byte {
-	jsonData, err := json.Marshal(msg)
+	jsonData, err := json.Marshal([]interface{}{msg.ID, msg.Type, msg.Value})
 	if err != nil {
 		fmt.Println("Error encoding message:", err)
 		return nil

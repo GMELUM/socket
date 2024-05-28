@@ -6,7 +6,6 @@ import (
 )
 
 type Options struct {
-	
 	OuterWorkers int
 	OuterTasks   int
 
@@ -99,58 +98,5 @@ type Options struct {
 	//
 	// Note that if present, it will be written in any result of handshake.
 	Header ws.HandshakeHeader
-
-	// OnRequest is a callback that will be called after request line
-	// successful parsing.
-	//
-	// The arguments are only valid until the callback returns.
-	//
-	// If returned error is non-nil then connection is rejected and response is
-	// sent with appropriate HTTP error code and body set to error message.
-	//
-	// RejectConnectionError could be used to get more control on response.
-	OnRequest func(uri []byte) error
-
-	// OnHost is a callback that will be called after "Host" header successful
-	// parsing.
-	//
-	// It is separated from OnHeader callback because the Host header must be
-	// present in each request since HTTP/1.1. Thus Host header is non-optional
-	// and required for every WebSocket handshake.
-	//
-	// The arguments are only valid until the callback returns.
-	//
-	// If returned error is non-nil then connection is rejected and response is
-	// sent with appropriate HTTP error code and body set to error message.
-	//
-	// RejectConnectionError could be used to get more control on response.
-	OnHost func(host []byte) error
-
-	// OnHeader is a callback that will be called after successful parsing of
-	// header, that is not used during WebSocket handshake procedure. That is,
-	// it will be called with non-websocket headers, which could be relevant
-	// for application-level logic.
-	//
-	// The arguments are only valid until the callback returns.
-	//
-	// If returned error is non-nil then connection is rejected and response is
-	// sent with appropriate HTTP error code and body set to error message.
-	//
-	// RejectConnectionError could be used to get more control on response.
-	OnHeader func(key, value []byte) error
-
-	// OnBeforeUpgrade is a callback that will be called before sending
-	// successful upgrade response.
-	//
-	// Setting OnBeforeUpgrade allows user to make final application-level
-	// checks and decide whether this connection is allowed to successfully
-	// upgrade to WebSocket.
-	//
-	// It must return non-nil either HandshakeHeader or error and never both.
-	//
-	// If returned error is non-nil then connection is rejected and response is
-	// sent with appropriate HTTP error code and body set to error message.
-	//
-	// RejectConnectionError could be used to get more control on response.
-	OnBeforeUpgrade func() (header ws.HandshakeHeader, err error)
 }
+

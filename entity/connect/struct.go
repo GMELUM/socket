@@ -18,8 +18,7 @@ import (
 )
 
 type Connect struct {
-	ID     string
-	Status string
+	ID string
 
 	Host    string
 	Uri     string
@@ -48,13 +47,8 @@ func New(
 	extensionCustom func([]byte, []httphead.Option) ([]httphead.Option, bool),
 	negotiate func(httphead.Option) (httphead.Option, error),
 	header ws.HandshakeHeader,
-	onRequest func(uri []byte) error,
-	onHost func(host []byte) error,
-	onHeader func(key, value []byte) error,
-	onBeforeUpgrade func() (header ws.HandshakeHeader, err error),
 
 	eventsCors *[]func(origin string) (err error),
-	eventsRequest *[]func(uri string) (err error),
 	eventsConnect *[]func(cn *Connect) (err error),
 
 ) (*Connect, error) {
@@ -77,12 +71,6 @@ func New(
 		Header:          header,
 		OnRequest: func(uri []byte) error {
 			connect.Uri = string(uri)
-			for _, callback := range *eventsRequest {
-				err := callback(connect.Uri)
-				if err != nil {
-					return err
-				}
-			}
 			return nil
 		},
 		OnHost: func(host []byte) error {
@@ -93,12 +81,11 @@ func New(
 			connect.Headers[strings.ToLower(string(key))] = string(data)
 			if bytes.Equal(key, []byte("Origin")) {
 				for _, callback := range *eventsCors {
-					callback(string(data))
+					err := callback(string(data))
+					if err != nil {
+						return err
+					}
 				}
-				return
-			}
-			if onHeader != nil {
-				return onHeader(key, data)
 			}
 			return nil
 		},
@@ -145,16 +132,16 @@ func (conn *Connect) Close() {
 	conn.desc.Close()
 }
 
-func (conn *Connect) Send(id int, event string, data *interface{}) error {
+func (conn *Connect) Send(id int, event string, data interface{}) error {
+
+	conn.mutexWrite.Lock()
+	defer conn.mutexWrite.Unlock()
 
 	encoded := encoding(Encoding{
 		ID:    id,
 		Type:  event,
 		Value: data,
 	})
-
-	conn.mutexWrite.Lock()
-	defer conn.mutexWrite.Unlock()
 
 	buffer := new(bytes.Buffer)
 	writer := wsutil.NewWriter(buffer, ws.StateServerSide, ws.OpBinary)
@@ -169,5 +156,30 @@ func (conn *Connect) Send(id int, event string, data *interface{}) error {
 	})
 
 	return nil
+
+}
+
+func (conn *Connect) Read() (*Decoding, error) {
+
+	conn.mutexRead.Lock()
+	defer conn.mutexRead.Unlock()
+
+	header, reader, err := wsutil.NextReader(conn.conn, ws.StateServerSide)
+	if err != nil {
+		return nil, err
+	}
+
+	if header.OpCode.IsControl() {
+		handler := wsutil.ControlFrameHandler(conn.conn, ws.StateServerSide)
+		return nil, handler(header, reader)
+	}
+
+	buf := new(bytes.Buffer)
+	_, err = buf.ReadFrom(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return decoding(buf.Bytes())
 
 }
