@@ -51,12 +51,12 @@ func main() {
 	})
 
 	// First Handling. Processing middleware executed before the main request processing
-	server.On("user.get", func(ctx *context.Context) (err error) {
+	server.Use("user.get", func(ctx *context.Context) (err error) {
 		return nil
 	})
 
 	// Second Handling. Processing middleware executed before the main request processing
-	server.On("user.get", func(ctx *context.Context) (err error) {
+	server.Use("user.get", func(ctx *context.Context) (err error) {
 		return nil
 	})
 
