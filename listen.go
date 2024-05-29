@@ -87,18 +87,39 @@ func (soc *socket) Listen(port int) error {
 					msg, err := conn.Read()
 
 					if err == nil {
+
 						if msg.ID == 0 && msg.Type == "ping" {
 							conn.Send(0, "pong", "")
 							return
 						}
-						if callback, ok := soc.events[msg.Type]; ok {
-							callback(&context.Context{
-								ID:   msg.ID,
-								Type: msg.Type,
-								Data: msg.Value,
-								Conn: conn,
-							})
+
+						ctx := &context.Context{
+							ID:   msg.ID,
+							Type: msg.Type,
+							Data: msg.Value,
+							Conn: conn,
 						}
+
+						if list, ok := soc.middlewares[msg.Type]; ok {
+							if len(list) > 0 {
+								for _, callback := range list {
+									err := callback(ctx)
+									if err != nil {
+										ctx.Conn.Send(ctx.ID, ctx.Type, err.Error())
+										return
+									}
+								}
+							}
+						}
+
+						if callback, ok := soc.events[msg.Type]; ok {
+							err := callback(ctx)
+							if err != nil {
+								ctx.Conn.Send(ctx.ID, ctx.Type, err.Error())
+								return
+							}
+						}
+
 					}
 				})
 

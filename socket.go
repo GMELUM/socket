@@ -33,5 +33,6 @@ type socket struct {
 	eventsReject     []func(cn *connect.Connect)
 	eventsCors       []func(origin string) (err error)
 
-	events map[string]func(ctx *context.Context)
+	middlewares map[string][]func(ctx *context.Context) (err error)
+	events      map[string]func(ctx *context.Context) (err error)
 }

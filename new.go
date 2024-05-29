@@ -44,6 +44,7 @@ func New(opt Options) *socket {
 		eventsDisconnect: []func(ch *connect.Connect){},
 		eventsCors:       []func(origin string) (err error){},
 
-		events: make(map[string]func(ctx *context.Context)),
+		middlewares: make(map[string][]func(ctx *context.Context) (err error)),
+		events:      make(map[string]func(ctx *context.Context) (err error)),
 	}
 }

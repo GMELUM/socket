@@ -14,9 +14,11 @@ type Context struct {
 	Conn *connect.Connect `json:"-"`
 }
 
-func (ctx *Context) Answer(data interface{}) {
+func (ctx *Context) Answer(data interface{}) error {
 	err := ctx.Conn.Send(ctx.ID, ctx.Type, data)
 	if err != nil {
-		ctx.Conn.Close()
+		// ctx.Conn.Close()
+		return err
 	}
+	return nil
 }

@@ -50,7 +50,18 @@ func main() {
 		}
 	})
 
-	server.Event("user.get", func(ctx *context.Context) {
+	// First Handling. Processing middleware executed before the main request processing
+	server.On("user.get", func(ctx *context.Context) (err error) {
+		return nil
+	})
+
+	// Second Handling. Processing middleware executed before the main request processing
+	server.On("user.get", func(ctx *context.Context) (err error) {
+		return nil
+	})
+
+	// Handling events sent from the user
+	server.Event("user.get", func(ctx *context.Context) (err error) {
 
 		data := map[string]interface{}{
 			"id":         123,
@@ -59,7 +70,7 @@ func main() {
 			"level":      99,
 		}
 
-		ctx.Answer(data)
+		return ctx.Answer(data)
 
 	})
 

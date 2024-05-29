@@ -1,0 +1,13 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+__debug_*
+
+*.test
+
+*.out
+
+go.work
+go.work.sum
