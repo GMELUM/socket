@@ -6,6 +6,10 @@ import (
 )
 
 type Options struct {
+
+	// Support 'poller' or 'default'. 'poller' only linux
+	Mode string
+
 	OuterWorkers int
 	OuterTasks   int
 
@@ -99,4 +103,3 @@ type Options struct {
 	// Note that if present, it will be written in any result of handshake.
 	Header ws.HandshakeHeader
 }
-

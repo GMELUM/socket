@@ -23,7 +23,18 @@ func New(opt Options) *socket {
 		opt.InnerTasks = 1
 	}
 
+	if opt.Mode == "" {
+		opt.Mode = "default"
+	}
+
+	if opt.Mode != "deafult" && opt.Mode != "poller" {
+		println("invalid value in field 'Mode'")
+		opt.Mode = "default"
+	}
+
 	return &socket{
+
+		mode: opt.Mode,
 
 		outerWorkers: opt.OuterWorkers,
 		outerTasks:   opt.OuterTasks,

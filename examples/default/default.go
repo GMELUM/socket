@@ -5,12 +5,19 @@ import (
 	"github.com/gmelum/socket/entity/connect"
 	"github.com/gmelum/socket/entity/context"
 	// "github.com/gmelum/socket/errors"
+
+	"github.com/gmelum/socket/utils"
 )
 
 func main() {
 
+	load := utils.NewLoaded()
+	load.StartLogging()
+
 	// Create a new websocket server instance
 	server := socket.New(socket.Options{
+
+		Mode: "poller",
 
 		// Limiting the processing of new connections
 		OuterWorkers: 10,
@@ -18,7 +25,7 @@ func main() {
 
 		// We limit the processing of messages from
 		// connected users
-		InnerWorkers: 1000,
+		InnerWorkers: 100,
 		InnerTasks:   10000,
 	})
 
@@ -50,18 +57,20 @@ func main() {
 		}
 	})
 
-	// First Handling. Processing middleware executed before the main request processing
-	server.Use("user.get", func(ctx *context.Context) (err error) {
-		return nil
-	})
+	// // First Handling. Processing middleware executed before the main request processing
+	// server.Use("user.get", func(ctx *context.Context) (err error) {
+	// 	return nil
+	// })
 
-	// Second Handling. Processing middleware executed before the main request processing
-	server.Use("user.get", func(ctx *context.Context) (err error) {
-		return nil
-	})
+	// // Second Handling. Processing middleware executed before the main request processing
+	// server.Use("user.get", func(ctx *context.Context) (err error) {
+	// 	return nil
+	// })
 
 	// Handling events sent from the user
 	server.Event("user.get", func(ctx *context.Context) (err error) {
+
+		load.Check()
 
 		data := map[string]interface{}{
 			"id":         123,

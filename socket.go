@@ -11,6 +11,8 @@ import (
 )
 
 type socket struct {
+	mode string
+
 	listener net.Listener
 
 	outerWorkers int

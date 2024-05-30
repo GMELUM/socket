@@ -10,6 +10,7 @@ require (
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mailru/easygo v0.0.0-20190618140210-3c14a0dc985f // indirect
+	github.com/paulbellamy/ratecounter v0.2.0
 	golang.org/x/sys v0.6.0 // indirect
 )
 

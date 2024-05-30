@@ -116,7 +116,10 @@ func New(
 	}
 
 	connect.conn = conn
-	connect.desc = netpoll.Must(netpoll.HandleRead(conn))
+
+	if poller != nil {
+		connect.desc = netpoll.Must(netpoll.HandleRead(conn))
+	}
 
 	return connect, nil
 
@@ -127,9 +130,11 @@ func (conn *Connect) Event(callback func(ev netpoll.Event)) {
 }
 
 func (conn *Connect) Close() {
-	conn.poller.Stop(conn.desc)
+	if conn.poller != nil || conn.desc != nil {
+		conn.poller.Stop(conn.desc)
+		conn.desc.Close()
+	}
 	conn.conn.Close()
-	conn.desc.Close()
 }
 
 func (conn *Connect) Send(id int, event string, data interface{}) error {
